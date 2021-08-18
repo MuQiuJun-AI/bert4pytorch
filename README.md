@@ -25,7 +25,7 @@
 ## 安装
 
 ```python
-pip install bert4pytorch
+pip install bert4pytorch==0.1.2
 ```
 
 ## 使用
