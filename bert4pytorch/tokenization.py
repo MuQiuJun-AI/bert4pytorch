@@ -9,9 +9,9 @@ import logging
 import os
 import unicodedata
 from io import open
-from snippets import truncate_sequences
+from bert4pytorch.snippets import truncate_sequences
 
-from file_utils import cached_path
+from bert4pytorch.file_utils import cached_path
 
 logger = logging.getLogger(__name__)
 

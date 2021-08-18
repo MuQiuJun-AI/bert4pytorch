@@ -19,7 +19,7 @@ import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
 
-from file_utils import cached_path, WEIGHTS_NAME, CONFIG_NAME
+from bert4pytorch.file_utils import cached_path, WEIGHTS_NAME, CONFIG_NAME
 
 
 
