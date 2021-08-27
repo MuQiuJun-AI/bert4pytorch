@@ -76,8 +76,8 @@ optimizer_grouped_parameters = [
 ]
 optimizer = AdamW(optimizer_grouped_parameters, lr=1e-5, correct_bias=False)
 
-num_warmup_steps=num_training_steps * warmup_proportion
 num_training_steps=train_batches * num_epoches
+num_warmup_steps=num_training_steps * warmup_proportion
 schedule = get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps)
 ```
 
