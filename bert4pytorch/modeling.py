@@ -120,7 +120,7 @@ class BertConfig(object):
 
     @classmethod
     def from_dict(cls, json_object):
-        """Constructs a `BertConfig` from a Python dictionary of parameters."""
+        """从dict构造一个BertConfig实例"""
         config = BertConfig(vocab_size_or_config_json_file=-1)
         for key, value in json_object.items():
             config.__dict__[key] = value
@@ -128,7 +128,7 @@ class BertConfig(object):
 
     @classmethod
     def from_json_file(cls, json_file):
-        """Constructs a `BertConfig` from a json file of parameters."""
+        """从json文件中构造一个BertConfig实例，推荐使用"""
         with open(json_file, "r", encoding='utf-8') as reader:
             text = reader.read()
         return cls.from_dict(json.loads(text))
@@ -142,11 +142,11 @@ class BertConfig(object):
         return output
 
     def to_json_string(self):
-        """Serializes this instance to a JSON string."""
+        """序列化实例，并保存实例为json字符串"""
         return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
 
     def to_json_file(self, json_file_path):
-        """ Save this instance to a json file."""
+        """序列化实例，并保存实例到json文件"""
         with open(json_file_path, "w", encoding='utf-8') as writer:
             writer.write(self.to_json_string())
 
@@ -232,7 +232,7 @@ class BertSelfAttention(nn.Module):
         key_layer = self.transpose_for_scores(mixed_key_layer)
         value_layer = self.transpose_for_scores(mixed_value_layer)
 
-        # Take the dot product between "query" and "key" to get the raw attention scores.
+        # q和k执行点积, 获得attention score
         attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
         # 执行attention mask，对于padding部分的attention mask，
@@ -313,8 +313,12 @@ class BertLayer(nn.Module):
         Transformer层:
         顺序为: Attention --> Add --> LayerNorm --> Feed Forward --> Add --> LayerNorm
         其中: Attention + Add + LayerNorm 构成了BertAttention
-              Feed Forward 构成了BertIntermediate
-              Add + LayerNorm 构成了BertOutput
+              Feed Forward的第一层linear 构成了BertIntermediate
+              Feed Forward的第二层linear + Add + LayerNorm 构成了BertOutput
+
+        注意: 1、以上都不计dropout层，并不代表没有dropout，每一层的dropout使用略有不同，注意区分
+              2、原始的Transformer的encoder中的Feed Forward层一共有两层linear，
+              config.intermediate_size的大小不仅是第一层linear的输出尺寸，也是第二层linear的输入尺寸
     """
     def __init__(self, config):
         super(BertLayer, self).__init__()
@@ -331,7 +335,7 @@ class BertLayer(nn.Module):
 
 class BertEncoder(nn.Module):
     """
-        多层Transformer
+        多层Transformer, base版本12层, large版本24层
     """
     def __init__(self, config):
         super(BertEncoder, self).__init__()
@@ -356,8 +360,8 @@ class BertPooler(nn.Module):
         self.activation = nn.Tanh()
 
     def forward(self, hidden_states):
-        # We "pool" the model by simply taking the hidden state corresponding
-        # to the first token.
+        # 这里取了最后一层的CLS位置的tensor作为pooler层的输入
+        # 当然，理论上说，怎么取都行, 有些任务上, 取最后一层所有位置的平均值、最大值更好, 或者取倒数n层，再做concat等等, 这由你决定
         first_token_tensor = hidden_states[:, 0]
         pooled_output = self.dense(first_token_tensor)
         pooled_output = self.activation(pooled_output)
@@ -451,7 +455,8 @@ class BertPreTrainedModel(nn.Module):
         """ Initialize the weights.
         """
         if isinstance(module, (nn.Linear, nn.Embedding)):
-            # Slightly different from the TF version which uses truncated_normal for initialization
+            # bert参数初始化, tf版本在linear和Embedding层使用的是截断正太分布, pytorch没有实现该函数, 
+            # 此种初始化对于加载预训练模型后进行finetune没有任何影响，
             # cf https://github.com/pytorch/pytorch/pull/5617
             module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
         elif isinstance(module, LayerNorm):
