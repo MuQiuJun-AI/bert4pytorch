@@ -319,3 +319,4 @@ class ConditionalRandomField(nn.Module):
             best_tags_list.append(best_tags)
 
         return best_tags_list
+    
