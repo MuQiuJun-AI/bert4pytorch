@@ -19,23 +19,7 @@ import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
 
-from bert4pytorch.file_utils import cached_path, WEIGHTS_NAME, CONFIG_NAME
-
-
-
 logger = logging.getLogger(__name__)
-
-PRETRAINED_MODEL_ARCHIVE_MAP = {
-    'bert-base-uncased': "https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased.tar.gz",
-    'bert-large-uncased': "https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased.tar.gz",
-    'bert-base-cased': "https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-cased.tar.gz",
-    'bert-large-cased': "https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-cased.tar.gz",
-    'bert-base-multilingual-uncased': "https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-multilingual-uncased.tar.gz",
-    'bert-base-multilingual-cased': "https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-multilingual-cased.tar.gz",
-    'bert-base-chinese': "https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-chinese.tar.gz",
-}
-BERT_CONFIG_NAME = 'bert_config.json'
-
 
 
 def gelu(x):
@@ -437,8 +421,8 @@ class BertPreTrainingHeads(nn.Module):
 
 
 class BertPreTrainedModel(nn.Module):
-    """ An abstract class to handle weights initialization and
-        a simple interface for dowloading and loading pretrained models.
+    """ 
+        加载预训练模型类, 只支持指定模型路径，所以必须先下载好需要的模型文件
     """
     def __init__(self, config, *inputs, **kwargs):
         super(BertPreTrainedModel, self).__init__()
@@ -452,7 +436,7 @@ class BertPreTrainedModel(nn.Module):
         self.config = config
 
     def init_bert_weights(self, module):
-        """ Initialize the weights.
+        """ 初始化权重
         """
         if isinstance(module, (nn.Linear, nn.Embedding)):
             # bert参数初始化, tf版本在linear和Embedding层使用的是截断正太分布, pytorch没有实现该函数, 
@@ -466,88 +450,22 @@ class BertPreTrainedModel(nn.Module):
             module.bias.data.zero_()
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_name_or_path, config, *inputs, **kwargs):
+    def from_pretrained(cls, pretrained_model_path, config, *inputs, **kwargs):
         """
-        Instantiate a BertPreTrainedModel from a pre-trained model file or a pytorch state dict.
-        Download and cache the pre-trained model file if needed.
-
-        Params:
-            pretrained_model_name_or_path: either:
-                - a str with the name of a pre-trained model to load selected in the list of:
-                    . `bert-base-uncased`
-                    . `bert-large-uncased`
-                    . `bert-base-cased`
-                    . `bert-large-cased`
-                    . `bert-base-multilingual-uncased`
-                    . `bert-base-multilingual-cased`
-                    . `bert-base-chinese`
-                - a path or url to a pretrained model archive containing:
-                    . `bert_config.json` a configuration file for the model
-                    . `pytorch_model.bin` a PyTorch dump of a BertForPreTraining instance
-                - a path or url to a pretrained model archive containing:
-                    . `bert_config.json` a configuration file for the model
-                    . `model.chkpt` a TensorFlow checkpoint
-            from_tf: should we load the weights from a locally saved TensorFlow checkpoint
-            cache_dir: an optional path to a folder in which the pre-trained models will be cached.
-            state_dict: an optional state dictionnary (collections.OrderedDict object) to use instead of Google pre-trained models
-            *inputs, **kwargs: additional input for the specific Bert class
-                (ex: num_labels for BertForSequenceClassification)
+            参数
+                pretrained_model_path:
+                    预训练模型权重的路径
+                config:
+                    BertConfig实例
+                    
         """
-        state_dict = kwargs.get('state_dict', None)
-        kwargs.pop('state_dict', None)
-        cache_dir = kwargs.get('cache_dir', None)
-        kwargs.pop('cache_dir', None)
-        from_tf = kwargs.get('from_tf', False)
-        kwargs.pop('from_tf', None)
-
-        if pretrained_model_name_or_path in PRETRAINED_MODEL_ARCHIVE_MAP:
-            archive_file = PRETRAINED_MODEL_ARCHIVE_MAP[pretrained_model_name_or_path]
-        else:
-            archive_file = pretrained_model_name_or_path
-        # redirect to the cache, if necessary
-        try:
-            resolved_archive_file = cached_path(archive_file, cache_dir=cache_dir)
-        except EnvironmentError:
-            logger.error(
-                "Model name '{}' was not found in model name list ({}). "
-                "We assumed '{}' was a path or url but couldn't find any file "
-                "associated to this path or url.".format(
-                    pretrained_model_name_or_path,
-                    ', '.join(PRETRAINED_MODEL_ARCHIVE_MAP.keys()),
-                    archive_file))
-            return None
-        if resolved_archive_file == archive_file:
-            logger.info("loading archive file {}".format(archive_file))
-        else:
-            logger.info("loading archive file {} from cache at {}".format(
-                archive_file, resolved_archive_file))
-        tempdir = None
-        if os.path.isdir(resolved_archive_file) or from_tf:
-            serialization_dir = resolved_archive_file
-        else:
-            # Extract archive to temp dir
-            tempdir = tempfile.mkdtemp()
-            logger.info("extracting archive file {} to temp dir {}".format(
-                resolved_archive_file, tempdir))
-            with tarfile.open(resolved_archive_file, 'r:gz') as archive:
-                archive.extractall(tempdir)
-            serialization_dir = tempdir
-        logger.info("Model config {}".format(config))
-        # Instantiate model.
+        # 实例化模型
         model = cls(config, *inputs, **kwargs)
-        if state_dict is None and not from_tf:
-            # 支持输入本地模型文件的全路径
-            if serialization_dir.replace("\\", "/").split("/")[-1] is "pyotrch_model.bin":
-                weights_path = serialization_dir
-            else: 
-                weights_path = os.path.join(serialization_dir, WEIGHTS_NAME)
-            state_dict = torch.load(weights_path, map_location='cpu')
-        if tempdir:
-            # Clean up temp dir
-            shutil.rmtree(tempdir)
-        # Load from a PyTorch state_dict
+        state_dict = torch.load(pretrained_model_path, map_location='cpu')
+        # 加载state_dict到pytorch模型当中
         old_keys = []
         new_keys = []
+        # 替换掉预训练模型的dict中的key与模型名称不匹配的问题
         for key in state_dict.keys():
             new_key = None
             if 'gamma' in key:
@@ -557,13 +475,17 @@ class BertPreTrainedModel(nn.Module):
             if new_key:
                 old_keys.append(key)
                 new_keys.append(new_key)
+        # 更新state_dict的key
         for old_key, new_key in zip(old_keys, new_keys):
             state_dict[new_key] = state_dict.pop(old_key)
 
+        """
+           下面的加载模型完全等价于module中的load_state_dict方法，但是由于每个key的前缀多了"bert."，这里就自行实现了类似load_state_dict方法的功能
+        """
         missing_keys = []
         unexpected_keys = []
         error_msgs = []
-        # copy state_dict so _load_from_state_dict can modify it
+        # 复制state_dict, 为了_load_from_state_dict能修改它
         metadata = getattr(state_dict, '_metadata', None)
         state_dict = state_dict.copy()
         if metadata is not None:
@@ -593,7 +515,7 @@ class BertPreTrainedModel(nn.Module):
 
 
 class BertModel(BertPreTrainedModel):
-    """BERT model ("Bidirectional Embedding Representations from a Transformer")
+    """BERT 模型 ("Bidirectional Embedding Representations from a Transformer")
 
     """
     def __init__(self, config):
@@ -635,6 +557,8 @@ class BertModel(BertPreTrainedModel):
         encoded_layers = self.encoder(embedding_output,
                                       extended_attention_mask,
                                       output_all_encoded_layers=output_all_encoded_layers)
+        # 如果需要返回所有隐藏层的输出，返回的encoded_layers包含了embedding_output，所以一共是13层
+        encoded_layers.insert(0, embedding_output)
         sequence_output = encoded_layers[-1]
         pooled_output = self.pooler(sequence_output)
         if not output_all_encoded_layers:
