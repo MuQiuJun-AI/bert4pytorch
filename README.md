@@ -50,7 +50,7 @@ model_path = "/model/pytorch_bert_pretrain_model"
 config = BertConfig(model_path + "/config.json")
 
 tokenizer = BertTokenizer(model_path + "/vocab.txt")
-model = BertModel.from_pretrained(model_path + '\pytorch_model.bin', config)
+model = BertModel.from_pretrained(model_path + '/pytorch_model.bin', config)
 
 input_ids, token_type_ids = tokenizer.encode("今天很开心")
 
