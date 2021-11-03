@@ -2,11 +2,19 @@
 
 ## 更新：
 
-- 2021年8月27更新：感谢大家的star，最近有小伙伴反映了一些小的bug，我也注意到了，奈何这个月工作上实在太忙，更新不及时，大约会在9月中旬集中更新一个只需要pip一下就完全可用的版本，然后会新添加一些关键注释。
+- **2021年8月27更新**：感谢大家的star，最近有小伙伴反映了一些小的bug，我也注意到了，奈何这个月工作上实在太忙，更新不及时，大约会在9月中旬集中更新一个只需要pip一下就完全可用的版本，然后会新添加一些关键注释。
 再增加对抗训练的内容，更新一个完整的finetune案例。
-- 2021年9月6日更新：
-  1、删除file_utils文件, 简化加载预训练模型代码和网络请求库的依赖, 这样就只支持下载相关模型文件后，本地加载模型，模型可以去这里下载：https://huggingface.co/models
-  2、增加特殊的layers、特殊的loss, layer增加了CRF，loss增加了focal_loss和LabelSmoothingCrossEntropy, 后续会逐步添加
+- **2021年9月6日更新**：<br>
+  1、删除file_utils文件, 简化加载预训练模型代码和网络请求库的依赖, 这样就只支持下载相关模型文件后，本地加载模型，模型可以去这里下载：https://huggingface.co/models<br>
+  2、增加特殊的layers、特殊的loss, layer增加了CRF，loss增加了focal_loss和LabelSmoothingCrossEntropy, 后续会逐步添加<br>
+  1、
+  2、
+  3、调整了部分注释，增加了tf模型转pytorch，但目前我还未经过严格的测试，等测试完成后，再更新<br>
+- **2021年11月3日更新**：<br>
+  考虑到后续对bert家族，比如albert、T5、NEZHA、ELECTRA等架构的实现能全部集中在一个model文件实现，保证代码简洁清爽，本次更新基本对代码进行了全面重构，主干参照了bert4keras的代码结构。几乎可以以bert4keras的api风格使用。另外实现了unilm式、gpt式的mask矩阵。使用例子后续会给出。
+  其他几点更新如下：<br>
+  1、删除ema文件，把权重滑动平均整合到optimization文件<br>
+  2、添加一个完整的分类案例，在CLUE的tnews数据集上做finetune<br>
   
 
 # 背景
@@ -29,61 +37,29 @@
 
 ### 未来将实现
 
-- albert、GPT、XLnet等网络架构
-- 实现对抗训练、conditional Layer Norm等功能（想法来自于苏神(苏剑林)的bert4keras开源项目，事实上，bert4pytorch就是受到了它的启发）
-- 添加大量的例子和中文注释，减轻学习难度
+- albert、GPT、XLnet、conformer等网络架构
+- 实现各种trick（比如对抗训练、ema等），定义特定的layer、loss，方便后续扩展
+- 添加大量nlp、语音识别的完整可直接运行的例子和中文注释，减轻学习难度
 
-## 安装
-
-```python
-pip install bert4pytorch==0.1.2
-```
 
 ## 使用
 
-- 加载预训练模型
-
+##### pip安装
 ```python
-from bert4pytorch.modeling import BertModel, BertConfig
-from bert4pytorch.tokenization import BertTokenizer
-from bert4pytorch.optimization import AdamW, get_linear_schedule_with_warmup
-import torch
-
-model_path = "/model/pytorch_bert_pretrain_model"
-config = BertConfig(model_path + "/config.json")
-
-tokenizer = BertTokenizer(model_path + "/vocab.txt")
-model = BertModel.from_pretrained(model_path + '/pytorch_model.bin', config)
-
-input_ids, token_type_ids = tokenizer.encode("今天很开心")
-
-input_ids = torch.tensor([input_ids])
-token_type_ids = torch.tensor([token_type_ids])
-
-model.eval()
-
-outputs = model(input_ids, token_type_ids, output_all_encoded_layers=True)
-
-## orther code
+pip install bert4pytorch==0.1.3
 ```
 
-- 带warmup的优化器实现
-
+#### 下载源码安装
 ```python
-param_optimizer = list(model.named_parameters())
-no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
-optimizer_grouped_parameters = [
-    {'params': [p for n, p in param_optimizer
-                if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
-    {'params': [p for n, p in param_optimizer
-                if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-]
-optimizer = AdamW(optimizer_grouped_parameters, lr=1e-5, correct_bias=False)
-
-num_training_steps=train_batches * num_epoches
-num_warmup_steps=num_training_steps * warmup_proportion
-schedule = get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps)
+pip install git+https://github.com/MuQiuJun-AI/bert4pytorch.git
 ```
+
+## 权重
+支持加载的权重
+
+- Google原版bert的pytorch版本(需要转换为pytorch版本的脚本): https://github.com/google-research/bert
+- 哈工大版roberta: https://github.com/ymcui/Chinese-BERT-wwm
+
 
 ## 其他
 
