@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class FocalLoss(nn.Module):
     '''Multi-class Focal loss implementation'''
     def __init__(self, gamma=2, weight=None,ignore_index=-100):
@@ -20,6 +21,7 @@ class FocalLoss(nn.Module):
         logpt = (1-pt)**self.gamma * logpt
         loss = F.nll_loss(logpt, target, self.weight,ignore_index=self.ignore_index)
         return loss
+
 
 class LabelSmoothingCrossEntropy(nn.Module):
     def __init__(self, eps=0.1, reduction='mean',ignore_index=-100):

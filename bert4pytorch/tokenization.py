@@ -38,7 +38,7 @@ def whitespace_tokenize(text):
     return tokens
 
 
-class BertTokenizer(object):
+class Tokenizer(object):
 
     def __init__(
         self, 
