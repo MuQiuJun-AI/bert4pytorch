@@ -45,6 +45,7 @@
 ```python
 pip install bert4pytorch==0.1.3
 ```
+目前pip安装的是旧版本，新版本请自行下载源码安装
 
 #### 下载源码安装
 ```python
