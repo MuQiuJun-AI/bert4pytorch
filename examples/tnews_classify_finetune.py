@@ -1,11 +1,3 @@
-import sys
-sys.path.insert(0, 'D:/vscodeworkspace/pythonCode/git_workspace/')
-sys.path.insert(0, 'D:/vscodeworkspace/pythonCode/git_workspace/bert4pytorch/')
-sys.path.insert(0, 'D:/vscodeworkspace/pythonCode/git_workspace/bert4pytorch/bert4pytorch/')
-sys.path.insert(0, 'D:/vscodeworkspace/pythonCode/git_workspace/bert4pytorch/examples/')
-print(sys.path)
-
-import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from bert4pytorch.modeling_new import build_transformer_model
 from bert4pytorch.tokenization import Tokenizer
@@ -16,7 +8,6 @@ import json
 import time
 
 SEED = 100
-np.random.seed(SEED)
 torch.manual_seed(SEED)
 # torch.cuda.manual_seed_all(SEED)
 torch.backends.cudnn.deterministic = True
@@ -160,7 +151,7 @@ for epoch in range(epochs):
     with torch.no_grad():
         correct = 0
         total = 0
-        for i, (token_ids, segment_ids, labels) in enumerate(train_dataloader):
+        for i, (token_ids, segment_ids, labels) in enumerate(test_dataloader):
             token_ids = token_ids.to(device)
             segment_ids = segment_ids.to(device)
             labels = labels.to(device)

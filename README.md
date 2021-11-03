@@ -7,9 +7,6 @@
 - **2021年9月6日更新**：<br>
   1、删除file_utils文件, 简化加载预训练模型代码和网络请求库的依赖, 这样就只支持下载相关模型文件后，本地加载模型，模型可以去这里下载：https://huggingface.co/models<br>
   2、增加特殊的layers、特殊的loss, layer增加了CRF，loss增加了focal_loss和LabelSmoothingCrossEntropy, 后续会逐步添加<br>
-  1、
-  2、
-  3、调整了部分注释，增加了tf模型转pytorch，但目前我还未经过严格的测试，等测试完成后，再更新<br>
 - **2021年11月3日更新**：<br>
   考虑到后续对bert家族，比如albert、T5、NEZHA、ELECTRA等架构的实现能全部集中在一个model文件实现，保证代码简洁清爽，本次更新基本对代码进行了全面重构，主干参照了bert4keras的代码结构。几乎可以以bert4keras的api风格使用。另外实现了unilm式、gpt式的mask矩阵。使用例子后续会给出。
   其他几点更新如下：<br>
