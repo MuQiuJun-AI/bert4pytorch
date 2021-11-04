@@ -32,9 +32,10 @@ class LayerNorm(nn.Module):
         self.eps = eps
 
     def forward(self, x):
-        mean = x.mean(-1, keepdim=True)
-        std = x.std(-1, keepdim=True)
-        return self.weight * (x - mean) / torch.sqrt(std + self.eps) + self.bias
+        u = x.mean(-1, keepdim=True)
+        s = (x - u).pow(2).mean(-1, keepdim=True)
+        x = (x - u) / torch.sqrt(s + self.eps)
+        return self.weight * x + self.bias
 
 
 class MultiHeadAttentionLayer(nn.Module):

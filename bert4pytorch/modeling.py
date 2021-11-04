@@ -202,8 +202,9 @@ class BERT(Transformer):
             self.pooler_activation = None
         if self.with_mlm:
             self.mlmDecoder = nn.Linear(self.hidden_size, self.vocab_size, bias=False)
-            self.mlmDecoder.weight = self.embeddings.word_embeddings.weight
+            # self.mlmDecoder.weight = self.embeddings.word_embeddings.weight
             self.mlmBias = nn.Parameter(torch.zeros(self.vocab_size))
+            self.mlmDecoder.bias = self.mlmBias
             self.mlmDense = nn.Linear(self.hidden_size, self.hidden_size)
             self.transform_act_fn = activations[self.hidden_act]
             self.mlmLayerNorm = LayerNorm(self.hidden_size, eps=1e-12)
@@ -274,7 +275,9 @@ class BERT(Transformer):
         # 是否添加mlm
         if self.with_mlm:
             mlm_hidden_state = self.mlmDense(sequence_output)
-            mlm_scores = self.mlmDecoder(mlm_hidden_state) + self.mlmBias
+            mlm_hidden_state = self.transform_act_fn(mlm_hidden_state)
+            mlm_hidden_state = self.mlmLayerNorm(mlm_hidden_state)
+            mlm_scores = self.mlmDecoder(mlm_hidden_state)
         else:
             mlm_scores = None
         # 根据情况返回值
