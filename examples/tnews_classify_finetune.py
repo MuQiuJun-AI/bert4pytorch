@@ -1,3 +1,8 @@
+#! -*- coding: utf-8 -*-
+# 基本测试：bert分类（15类）
+# 数据集：clue benchmark数据集
+# 数据下载链接：https://storage.googleapis.com/cluebenchmark/tasks/tnews_public.zip
+
 from torch.utils.data import Dataset, DataLoader
 from bert4pytorch.modeling_new import build_transformer_model
 from bert4pytorch.tokenization import Tokenizer
@@ -108,7 +113,7 @@ test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 model = Model(config_path, checkpoint_path).to(device)
 # 定义损失函数
 critertion = nn.CrossEntropyLoss()
-# 权重衰减，layernorn层。以及每一层的bias不进行权重衰减
+# 权重衰减，layernorm层，以及每一层的bias不进行权重衰减
 param_optimizer = list(model.named_parameters())
 no_decay = ['bias', 'layerNorm']
 optimizer_grouped_parameters = [

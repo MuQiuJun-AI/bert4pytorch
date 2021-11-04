@@ -37,75 +37,6 @@ class LayerNorm(nn.Module):
         return self.weight * (x - mean) / torch.sqrt(std + self.eps) + self.bias
 
 
-class MultiHeadAttention(nn.Module):
-    """
-        多头注意力机制
-        原理可看这篇博客: http://jalammar.github.io/illustrated-transformer/
-    """
-
-    def __init__(self, hidden_size, num_attention_heads, dropout_rate, attention_scale=True,
-                 return_attention_scores=False):
-        super(MultiHeadAttention, self).__init__()
-
-        if hidden_size % num_attention_heads != 0:
-            raise ValueError(
-                "The hidden size (%d) is not a multiple of the number of attention "
-                "heads (%d)" % (hidden_size, num_attention_heads))
-        self.hidden_size = hidden_size
-        self.num_attention_heads = num_attention_heads
-        self.dropout_rate = dropout_rate
-        self.attention_head_size = int(hidden_size / num_attention_heads)
-        self.all_head_size = num_attention_heads * self.attention_head_size
-        self.attention_scale = attention_scale
-        self.return_attention_scores = return_attention_scores
-
-        self.query = nn.Linear(hidden_size, self.all_head_size)
-        self.key = nn.Linear(hidden_size, self.all_head_size)
-        self.value = nn.Linear(hidden_size, self.all_head_size)
-        self.out = nn.Linear(hidden_size, self.all_head_size)
-
-        self.dropout = nn.Dropout(self.dropout_rate)
-
-    def transpose_for_scores(self, x):
-        new_x_shape = x.size()[:-1] + (self.num_attention_heads, self.attention_head_size)
-        x = x.view(*new_x_shape)
-        return x.permute(0, 2, 1, 3)
-
-    def forward(self, hidden_states, attention_mask):
-        mixed_query_layer = self.query(hidden_states)
-        mixed_key_layer = self.key(hidden_states)
-        mixed_value_layer = self.value(hidden_states)
-
-        query_layer = self.transpose_for_scores(mixed_query_layer)
-        key_layer = self.transpose_for_scores(mixed_key_layer)
-        value_layer = self.transpose_for_scores(mixed_value_layer)
-
-        # q和k执行点积, 获得attention score
-        attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
-        # 是否进行attention scale
-        if self.attention_scale:
-            attention_scores = attention_scores / math.sqrt(self.attention_head_size)
-        # 执行attention mask，对于padding部分的attention mask，
-        # 值为-1000*(1-0)，经过softmax后，attention_probs几乎为0，所以不会attention到padding部分
-        attention_scores = attention_scores + attention_mask
-
-        # 将attention score 归一化到0-1
-        attention_probs = nn.Softmax(dim=-1)(attention_scores)
-
-        attention_probs = self.dropout(attention_probs)
-
-        context_layer = torch.matmul(attention_probs, value_layer)
-        context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
-        new_context_layer_shape = context_layer.size()[:-2] + (self.all_head_size,)
-        context_layer = context_layer.view(*new_context_layer_shape)
-
-        # 是否返回attention scores
-        if self.return_attention_scores:
-            return self.out(context_layer), attention_scores
-        else:
-            return self.out(context_layer)
-
-
 class MultiHeadAttentionLayer(nn.Module):
     def __init__(self, hidden_size, num_attention_heads, dropout_rate, attention_scale=True,
                  return_attention_scores=False):
@@ -194,24 +125,6 @@ class MultiHeadAttentionLayer(nn.Module):
             return self.o(context_layer), attention_scores
         else:
             return self.o(context_layer)
-
-
-class FeedForward(nn.Module):
-    def __init__(self, hidden_size, intermediate_size, hidden_act='gelu'):
-        super(FeedForward, self).__init__()
-        self.intermediate_act_fn = activations[hidden_act]
-        self.IntermediateDense = nn.Linear(hidden_size, intermediate_size)
-        self.OutputDense = nn.Linear(intermediate_size, hidden_size)
-        # self.dropout = nn.Dropout(config.hidden_dropout_prob)
-        # self.LayerNorm = LayerNorm(config.hidden_size, eps=1e-12)
-
-    def forward(self, input_tensor):
-        hidden_states = self.IntermediateDense(input_tensor)
-        hidden_states = self.intermediate_act_fn(hidden_states)
-        hidden_states = self.OutputDense(hidden_states)
-        hidden_states = self.dropout(hidden_states)
-        hidden_states = self.LayerNorm(hidden_states + input_tensor)
-        return hidden_states
 
 
 class PositionWiseFeedForward(nn.Module):
