@@ -1,10 +1,17 @@
+# import sys
+# sys.path.insert(0, 'D:/vscodeworkspace/pythonCode/git_workspace/')
+# sys.path.insert(0, 'D:/vscodeworkspace/pythonCode/git_workspace/bert4pytorch/')
+# sys.path.insert(0, 'D:/vscodeworkspace/pythonCode/git_workspace/bert4pytorch/bert4pytorch/')
+# sys.path.insert(0, 'D:/vscodeworkspace/pythonCode/git_workspace/bert4pytorch/examples/')
+# print(sys.path)
+
 #! -*- coding: utf-8 -*-
 # 基本测试：bert分类（15类）
 # 数据集：clue benchmark数据集
 # 数据下载链接：https://storage.googleapis.com/cluebenchmark/tasks/tnews_public.zip
 
 from torch.utils.data import Dataset, DataLoader
-from bert4pytorch.modeling_new import build_transformer_model
+from bert4pytorch.modeling import build_transformer_model
 from bert4pytorch.tokenization import Tokenizer
 from bert4pytorch.optimization import AdamW, get_linear_schedule_with_warmup
 import torch
