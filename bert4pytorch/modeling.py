@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import copy
 import json
-from bert4pytorch.layers_new import LayerNorm, MultiHeadAttentionLayer, PositionWiseFeedForward, activations
+from bert4pytorch.layers import LayerNorm, MultiHeadAttentionLayer, PositionWiseFeedForward, activations
 
 
 class Transformer(nn.Module):
