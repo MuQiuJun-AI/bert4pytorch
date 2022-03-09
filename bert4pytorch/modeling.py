@@ -295,16 +295,16 @@ class BERT(Transformer):
             'embeddings.word_embeddings.weight': 'bert.embeddings.word_embeddings.weight',
             'embeddings.position_embeddings.weight': 'bert.embeddings.position_embeddings.weight',
             'embeddings.segment_embeddings.weight': 'bert.embeddings.token_type_embeddings.weight',
-            'embeddings.layerNorm.weight': 'bert.embeddings.LayerNorm.gamma',
-            'embeddings.layerNorm.bias': 'bert.embeddings.LayerNorm.beta',
+            'embeddings.layerNorm.weight': 'bert.embeddings.LayerNorm.weight',
+            'embeddings.layerNorm.bias': 'bert.embeddings.LayerNorm.bias',
             'pooler.weight': 'bert.pooler.dense.weight',
             'pooler.bias': 'bert.pooler.dense.bias',
             'nsp.weight': 'cls.seq_relationship.weight',
             'nsp.bias': 'cls.seq_relationship.bias',
             'mlmDense.weight': 'cls.predictions.transform.dense.weight',
             'mlmDense.bias': 'cls.predictions.transform.dense.bias',
-            'mlmLayerNorm.weight': 'cls.predictions.transform.LayerNorm.gamma',
-            'mlmLayerNorm.bias': 'cls.predictions.transform.LayerNorm.beta',
+            'mlmLayerNorm.weight': 'cls.predictions.transform.LayerNorm.weight',
+            'mlmLayerNorm.bias': 'cls.predictions.transform.LayerNorm.bias',
             'mlmBias': 'cls.predictions.bias',
             'mlmDecoder.weight': 'cls.predictions.decoder.weight'
 
@@ -319,14 +319,14 @@ class BERT(Transformer):
                             'encoderLayer.%d.multiHeadAttention.v.bias' % i: prefix + 'attention.self.value.bias',
                             'encoderLayer.%d.multiHeadAttention.o.weight' % i: prefix + 'attention.output.dense.weight',
                             'encoderLayer.%d.multiHeadAttention.o.bias' % i: prefix + 'attention.output.dense.bias',
-                            'encoderLayer.%d.layerNorm1.weight' % i: prefix + 'attention.output.LayerNorm.gamma',
-                            'encoderLayer.%d.layerNorm1.bias' % i: prefix + 'attention.output.LayerNorm.beta',
+                            'encoderLayer.%d.layerNorm1.weight' % i: prefix + 'attention.output.LayerNorm.weight',
+                            'encoderLayer.%d.layerNorm1.bias' % i: prefix + 'attention.output.LayerNorm.bias',
                             'encoderLayer.%d.feedForward.intermediateDense.weight' % i: prefix + 'intermediate.dense.weight',
                             'encoderLayer.%d.feedForward.intermediateDense.bias' % i: prefix + 'intermediate.dense.bias',
                             'encoderLayer.%d.feedForward.outputDense.weight' % i: prefix + 'output.dense.weight',
                             'encoderLayer.%d.feedForward.outputDense.bias' % i: prefix + 'output.dense.bias',
-                            'encoderLayer.%d.layerNorm2.weight' % i: prefix + 'output.LayerNorm.gamma',
-                            'encoderLayer.%d.layerNorm2.bias' % i: prefix + 'output.LayerNorm.beta'
+                            'encoderLayer.%d.layerNorm2.weight' % i: prefix + 'output.LayerNorm.weight',
+                            'encoderLayer.%d.layerNorm2.bias' % i: prefix + 'output.LayerNorm.bias'
                             })
 
         return mapping
