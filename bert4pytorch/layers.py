@@ -35,9 +35,9 @@ class LayerNorm(nn.Module):
             # 条件layernorm, 用于条件文本生成,
             # 这里采用全零初始化, 目的是在初始状态不干扰原来的预训练权重
             self.dense1 = nn.Linear(2 * hidden_size, hidden_size, bias=False)
-            self.dense.weight.data.uniform_(0, 0)
+            self.dense1.weight.data.uniform_(0, 0)
             self.dense2 = nn.Linear(2 * hidden_size, hidden_size, bias=False)
-            self.dense.weight.data.uniform_(0, 0)
+            self.dense2.weight.data.uniform_(0, 0)
 
     def forward(self, x):
         if self.conditional:

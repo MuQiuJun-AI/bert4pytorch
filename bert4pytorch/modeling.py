@@ -68,7 +68,8 @@ class Transformer(nn.Module):
         mapping = mapping or self.variable_mapping()
 
         for new_key, old_key in mapping.items():
-            state_dict[new_key] = state_dict.pop(old_key)
+            if old_key in state_dict.keys():
+                state_dict[new_key] = state_dict.pop(old_key)
         self.load_state_dict(state_dict, strict=self.ignore_invalid_weights)
 
 
@@ -80,16 +81,25 @@ def lm_mask(segment_ids):
     return mask
 
 
-def unilm_mask(segment_ids):
+def unilm_mask(tokens_ids, segment_ids):
     """定义UniLM的Attention Mask（Seq2Seq模型用）
         其中source和target的分区，由segment_ids来表示。
         UniLM: https://arxiv.org/abs/1905.03197
+
+        token_ids: shape为(batch_size, seq_length), type为tensor
+        segment_ids: shape为(batch_size, seq_length)， type为tensor
     """
 
+    # 把segment_ids的padding部分值变成1，思想就是先不考虑padding，最后统一把padding部分的mask值设为0
+    ids = segment_ids + (tokens_ids <= 0).long()
     # 在序列维度进行累加求和
-    idxs = torch.cumsum(segment_ids, dim=1)
+    idxs = torch.cumsum(ids, dim=1)
+    # 根据tokens_ids构造mask矩阵：[batch_size, 1, seq_length, 1]
+    extended_mask = tokens_ids.unsqueeze(1).unsqueeze(3)
     # 构造unilm的mask矩阵，并把shape扩充到[batch_size, num_heads, from_seq_length, to_seq_length]
     mask = (idxs.unsqueeze(1) <= idxs.unsqueeze(2)).unsqueeze(1).to(dtype=torch.float32)
+    # 把padding部分的mask值设为0
+    mask *= extended_mask
     return mask
 
 
@@ -202,6 +212,7 @@ class BERT(Transformer):
             self.pooler_activation = None
         if self.with_mlm:
             self.mlmDecoder = nn.Linear(self.hidden_size, self.vocab_size, bias=False)
+            # 需不需要这一操作，有待验证
             # self.mlmDecoder.weight = self.embeddings.word_embeddings.weight
             self.mlmBias = nn.Parameter(torch.zeros(self.vocab_size))
             self.mlmDecoder.bias = self.mlmBias
