@@ -4,22 +4,19 @@ import torch.nn.functional as F
 
 
 class FocalLoss(nn.Module):
-    '''Multi-class Focal loss implementation'''
-    def __init__(self, gamma=2, weight=None,ignore_index=-100):
+    def __init__(self, gamma: float = 2.0, weight=None, reduction: str = 'mean') -> None:
         super(FocalLoss, self).__init__()
         self.gamma = gamma
         self.weight = weight
-        self.ignore_index=ignore_index
 
-    def forward(self, input, target):
-        """
-        input: [N, C]
-        target: [N, ]
-        """
-        logpt = F.log_softmax(input, dim=1)
-        pt = torch.exp(logpt)
-        logpt = (1-pt)**self.gamma * logpt
-        loss = F.nll_loss(logpt, target, self.weight,ignore_index=self.ignore_index)
+    def forward(self, inputs: torch.Tensor, targets: torch.Tensor):
+        ce_loss = F.cross_entropy(inputs, targets, weight=self.weight, reduction="none")
+        p_t = torch.exp(-ce_loss)
+        loss = (1 - p_t)**self.gamma * ce_loss
+        if self.reduction == "mean":
+            loss = loss.mean()
+        elif self.reduction == "sum":
+            loss = loss.sum()
         return loss
 
 
