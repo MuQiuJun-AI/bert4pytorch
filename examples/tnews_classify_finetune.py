@@ -173,6 +173,6 @@ for epoch in range(epochs):
         test_acc = correct / total
         test_acc_list.append(test_acc)
 
-        print('non ema Epoch [{}/{}], train_non_ema_acc: {:.6f}'
+        print('Epoch [{}/{}], train_acc: {:.6f}'
               .format(epoch + 1, epochs, test_acc))
     model.train()
