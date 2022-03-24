@@ -134,10 +134,8 @@ scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_tra
 
 total_step = len(train_dataloader)
 loss_list = []
-train_non_ema_acc_list = []
-train_ema_acc_list = []
-test_non_ema_acc_list = []
-test_ema_acc_list = []
+test_acc_list = []
+
 
 best_acc = 0.0
 model.train()
@@ -172,9 +170,9 @@ for epoch in range(epochs):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-        train_non_ema_acc = correct / total
-        train_non_ema_acc_list.append(train_non_ema_acc)
+        test_acc = correct / total
+        test_acc_list.append(test_acc)
 
         print('non ema Epoch [{}/{}], train_non_ema_acc: {:.6f}'
-              .format(epoch + 1, epochs, train_non_ema_acc))
+              .format(epoch + 1, epochs, test_acc))
     model.train()
