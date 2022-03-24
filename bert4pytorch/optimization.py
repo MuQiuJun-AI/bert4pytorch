@@ -137,6 +137,49 @@ class AdamW(Optimizer):
         return loss
 
 
+class FGM():
+    '''
+        FGM对抗训练
+        例子:
+            # 初始化
+            fgm = FGM(model)
+            ...  这里省略中间过程
+            # 在计算损失并backward后，调用attack，目的是对word embedding增加扰动
+            loss = critertion(outputs, labels)
+            loss.backward()
+            fgm.attack()
+            # optimizer.zero_grad() # 如果不想累加梯度，就把这里的注释取消，一般不使用
+            # 输入再次传入model计算损失，然后反向传播，累加对抗训练的梯度
+            loss_sum = critertion(model(token_ids, segment_ids), labels)
+            loss_sum.backward()
+            # 恢复Embedding的参数
+            fgm.restore()
+            # 梯度下降，更新参数
+            optimizer.step()
+            optimizer.zero_grad()
+
+        '''
+    def __init__(self, model):
+        self.model = model
+        self.backup = {}
+
+    def attack(self, epsilon=1., emb_name='word_embeddings'):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad and emb_name in name:
+                self.backup[name] = param.data.clone()
+                norm = torch.norm(param.grad)
+                if norm != 0 and not torch.isnan(norm):
+                    r_at = epsilon * param.grad / norm
+                    param.data.add_(r_at)
+
+    def restore(self, emb_name='word_embeddings'):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad and emb_name in name:
+                assert name in self.backup
+                param.data = self.backup[name]
+        self.backup = {}
+
+
 class ExponentialMovingAverage():
     '''
         模型权重的指数滑动平均
