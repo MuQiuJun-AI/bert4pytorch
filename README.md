@@ -2,7 +2,7 @@
 
 ## 更新：
 
-- **2022年4月2日更新**:  最近bert4pytorch新增了一位开发者，新加了一些功能，地址如下https://gitee.com/moontheunderwater/bert4pytorch，目前还在整理调试中，整理完成后会上线
+- **2022年4月2日更新**:  最近bert4pytorch新增了一位开发者，新加了一些功能，地址如下<https://gitee.com/moontheunderwater/bert4pytorch>，目前还在整理调试中，整理完成后会上线
 - **2022年3月24日更新**:  实现对抗训练（FGM），并在分类任务上测试通过
 - **2022年3月22日更新**： focal loss更新，并在分类任务上测试通过
 - **2021年11月4日更新**： 基础测试, 添加mlm预测案例
